@@ -1,7 +1,10 @@
+
 '''
-Find all of the directories with a total size of at most 100000.
-What is the sum of the total sizes of those directories?
+Find the smallest directory that, if deleted, would free up enough space on the filesystem to run the update.
+What is the total size of that directory?
 '''
+TOTAL_DISK_SPACE = 70_000_000
+REQUIRED_SPACE = 30_000_000
 
 class Node:
     '''A node in a file system'''
@@ -65,15 +68,23 @@ with open('inputs/Day7.txt') as input:
 
 # print(root)
 
-total = 0
-# Work out the size of each directory
+freeSpace = TOTAL_DISK_SPACE - root.size()
+neededSpace = REQUIRED_SPACE - freeSpace
+
+print(f'There are {freeSpace} bytes free. An additional {neededSpace} bytes are needed.')
+
+# Work out the size of each directory, keep those over the needed space
+candidates = {}
 directoriesToCheck = [root]
 while len(directoriesToCheck) > 0:
     dir = directoriesToCheck.pop(0)
     dirSize = dir.size()
-    if dirSize <= 100_000:
-        total += dirSize
+    if dirSize >= neededSpace:
+        candidates[dir] = dirSize
     
     directoriesToCheck.extend([dir for dir in dir.contents.values() if dir.type == 'dir'])
 
-print(f'The sum of the directories with a size of 100000 or less is {total}.')
+smallest = sorted(candidates.items(), key=lambda i: i[1])[0][0]
+
+
+print(f'The size of the smallest directory that, if deleted, would free up enough space on the filesystem to run the update is {smallest.name} ({smallest.size()}).') 
