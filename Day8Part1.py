@@ -37,7 +37,6 @@ for y in range(len(trees)):
             # print(f'({x},{len(trees)-y-1}) is visible from the bottom.')
             highestFromBottom[x] = trees[len(trees)-y-1][x]
             visible.add((x,len(trees)-y-1))
-        pass
 
 # print(f'Visible trees: {sorted(visible)}')
 
