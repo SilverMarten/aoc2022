@@ -1,11 +1,11 @@
-import logging
+import logging, Colorer
 from Tools import sign
 
 '''How many positions does the tail of the rope visit at least once?'''
 
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
-with open('inputs/Day9.txt') as input:
+with open('inputs/Day9 sample.txt') as input:
     lines = input.read().splitlines()
 
 rope = [(0,0) for i in range(10)]
@@ -29,7 +29,7 @@ for line in lines:
                     case 'L':
                         headPosition = (headPosition[0] - 1, headPosition[1])
 
-            logging.debug(f'Rope {i}: {headPosition}')
+            logging.info(f'Rope {i}: {headPosition}')
             # Move tail
             deltaX = headPosition[0]-tailPosition[0]
             deltaY = headPosition[1]-tailPosition[1]
@@ -41,6 +41,6 @@ for line in lines:
             rope[i+1] = tailPosition
 
         visitedPositions.add(rope[-1])
-        logging.debug(f'Tail: {rope[-1]}')
+        logging.info(f'Tail: {rope[-1]}')
 
 print(f'The tail of the rope visits {len(visitedPositions)} positions.')
