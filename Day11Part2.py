@@ -43,16 +43,11 @@ for i in range(0, len(lines), 7):
 for monkey in monkeys:
     log.debug(str(monkey))
 
-# simulate 20 rounds
-for round in range(20):
+# simulate 10,000 rounds
+for round in range(10_000):
     if round > 0 and log.level == logging.DEBUG:
         log.setLevel(logging.INFO)
 
-    log.info(f'\nRound {round+1}:')
-    i = 0
-    for monkey in monkeys:
-        log.info(f'Monkey {i}: {", ".join([str(i) for i in monkey.items])}')
-        i += 1
     i = 0
     for monkey in monkeys:
         log.debug(f'Monkey {i}:')
@@ -62,10 +57,11 @@ for round in range(20):
             old = monkey.items.pop(0)
             log.debug(f'  Monkey inspects an item with a worry level of {old}.')
             log.debug(f'    Operation: {monkey.operation}')
-            old = eval(monkey.operation)
-            log.debug(f'    New worry level: {old}.')
-            new = math.floor(old / 3)
-            log.debug(f'    Monkey gets bored with item. Worry level is divided by 3 to {new}.')
+            new = eval(monkey.operation)
+            assert new > old, f'New: {new} is not greater than old: {old}'
+            log.debug(f'    New worry level: {new}.')
+            # new = math.floor(new / 3)
+            # log.debug(f'    Monkey gets bored with item. Worry level is divided by 3 to {new}.')
             if isDivisible(new, monkey.test):
                 log.debug(f'    Current worry level is divisible by {monkey.test}.')
                 monkeys[monkey.trueMonkey].items.append(new)
@@ -76,12 +72,12 @@ for round in range(20):
                 log.debug(f'    Item with worry level {new} is thrown to monkey {monkey.falseMonkey}.')
             monkey.inspected += 1
     
-    
-    i = 0
-    for monkey in monkeys:
-        log.info(f'Monkey {i} inspected items {monkey.inspected} times')
-        i += 1
-
+    if round+1 in [1,20] or (round+1)%1000 == 0:
+        log.info(f'\nRound {round+1}:')
+        i = 0
+        for monkey in monkeys:
+            log.info(f'Monkey {i} inspected items {monkey.inspected} times')
+            i += 1
 
 monkeys = sorted(monkeys, key=lambda m: m.inspected, reverse=True)
 print(f'The level of monkey business after 20 rounds is {monkeys[0].inspected * monkeys[1].inspected}')
