@@ -1,9 +1,10 @@
 import logging, Colorer
 from Tools import sign
+from functools import cmp_to_key
 
 '''
-Determine which pairs of packets are already in the right order.
-What is the sum of the indices of those pairs?
+Organize all of the packets into the correct order.
+What is the decoder key for the distress signal?
 '''
 
 def compare(left, right):
@@ -32,20 +33,22 @@ log = logging.getLogger()
 with open('inputs/Day13.txt') as input:
     lines = input.read().splitlines()
 
-orderedLines = []
+# Add divider packets
+divider1 = '[[2]]'
+lines.append(divider1)
+divider2 = '[[6]]'
+lines.append(divider2)
 
 # Parse the packets
-for i in range(0, len(lines), 3):
-    logging.debug(f'Comparing {lines[i]} and {lines[i+1]}.')
-    left = eval(lines[i])
-    right = eval(lines[i+1])
-    if compare(left, right) > 0:
-        log.debug('They are in the right order.')
-        orderedLines.append(int(i/3 + 1))
-    else:
-        log.debug('They are not in the right order.')
+packets = [eval(line) for line in lines if line != '']
+log.debug('Unsorted: \n' + '\n'.join([str(packet) for packet in packets]))
 
-log.info(f'The pairs in the right order are: {orderedLines}')
+packets = sorted(packets, key=cmp_to_key(compare), reverse=True)
 
-print(f'The sum of the indicies of the correctly ordered pairs is: {sum(orderedLines)}')
+log.debug('Sorted: \n' + '\n'.join([str(packet) for packet in packets]))
+
+dividerPackets = [packets.index(eval(divider1))+1, packets.index(eval(divider2))+1]
+log.debug(f'The divider packets are at: {dividerPackets}')
+
+print(f'The decoder key for the distress signal: {dividerPackets[0] * dividerPackets[1]}')
 
