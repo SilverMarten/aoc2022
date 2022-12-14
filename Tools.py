@@ -2,7 +2,7 @@ import logging, Colorer, random
 '''
 Useful methods
 '''
-logging.basicConfig(format='%(message)s', level=logging.WARN)
+# logging.basicConfig(format='%(message)s', level=logging.WARN)
 log = logging.getLogger()
 
 def sign(number):
