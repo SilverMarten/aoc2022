@@ -97,12 +97,12 @@ def isDivisible(number, divisor):
         assert isDivisible(validCombo[1], validCombo[0]), f'{validCombo[1]} divide by {validCombo[0]}'
 
     for i in range(1_000):
-        for divisor in [2,3,5,7,11,13,19,23]:
+        for divisor in [2,3,5,7,11,13,19,17,23]:
             number = random.randint(2_000_000, 1_000_000_000) * random.randint(2_000_000, 1_000_000_000)
             assert isDivisible(number*divisor, divisor), f'{number*divisor} divide by {divisor}'
 
     for i in range(1_000):
-        for divisor in [2,3,5,7,11,13,19,23]:
+        for divisor in [2,3,5,7,11,13,19,17,23]:
             number = random.randint(1_000_000_000, 1_000_000_000_000) * random.randint(1_000_000_000, 1_000_000_000_000)
             assert isDivisible(number*divisor, divisor), f'{number*divisor} divide by {divisor}'
 
