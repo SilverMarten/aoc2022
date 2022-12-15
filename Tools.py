@@ -13,6 +13,10 @@ def sign(number):
 
     return (number > 0) - (number < 0 )
 
+def between(number, min, max, inclusive=True):
+    return (number > min and number < max) \
+           or (inclusive and (number == min or number == max))
+
 def isDivisible(number, divisor):
     '''
         Using rules, determine if a number is evenly divisible by a given divisor.
