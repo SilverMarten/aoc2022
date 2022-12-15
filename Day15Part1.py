@@ -26,10 +26,10 @@ class Sensor:
 In the row where y=2000000, how many positions cannot contain a beacon?
 '''
 
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 log = logging.getLogger()
 
-with open('inputs/Day15 sample.txt') as input:
+with open('inputs/Day15.txt') as input:
     lines = input.read().splitlines()
 
 # Parse the input
@@ -57,60 +57,25 @@ for line in lines:
         if coordinate[1] < minY: minY = coordinate[1]
 
 log.info(f'X: {minX} - {maxX}, Y: {minY} - {maxY}')
-# Sample: X: 494 - 503, Y: 4 - 9
-# Real: X: 483 - 557, Y: 13 - 170
-exit()
-# Create/draw the map
-minX -= 1
-map = [['.' for x in range(minX, maxX+1)] for y in range(maxY+1)]
-# log.debug(printMap(map))
+# Sample: X: -2 - 25, Y: 0 - 22
+# Real: X: -893678 - 3999864, Y: -690123 - 3975025
 
-for line in rockLines:
-    # log.debug(line)
-    for i in range(len(line)-1):
-        fromPoint = line[i]
-        toPoint = line[i+1]
-        if(fromPoint[0] == toPoint[0]):
-            # Vertical
-            x = fromPoint[0] - minX
-            for y in range(min(fromPoint[1],toPoint[1]), max(fromPoint[1],toPoint[1])+1):
-                map[y][x] = '#'
-        else:
-            # Horizontal
-            for x in range(min(fromPoint[0],toPoint[0]), max(fromPoint[0],toPoint[0])+1):
-                map[fromPoint[1]][x - minX] = '#'
+row = 10 if maxY < 2_000_000 else 2_000_000
 
-sandStart = 500 - minX
-map[0][sandStart] = '+'
-log.debug(f'  {minX}\n' + printMap(map))
+# Check how much each sensor projects onto the given line
+covered = set()
+for sensor in sensors:
+    distance = abs(sensor.location[1]-row)
+    log.debug(f'Sensor at {sensor.location} is {distance} away from row {row}, with a range of {sensor.range}.')
+    if distance < sensor.range:
+        coverage = (sensor.range - distance) * 2 + 1
+        fromX = sensor.location[0] - int(coverage/2)
+        toX = sensor.location[0] + int(coverage/2)
+        log.debug(f'{coverage} cells are covered, from {fromX} to {toX}.')
+        for x in range(fromX, toX):
+            covered.add((x,row))
 
-# Simulate sand
-unitsOfSand = 0
-sandLimit = (maxX-minX)*maxY
-while unitsOfSand < sandLimit:
-    x = sandStart
-    topOfSand = min([y for y in range(maxY+1) if map[y][x] not in ['.', '+']]) - 1 
-    if topOfSand == maxY:
-        break
+blankPositions = (maxX - minX) - len(covered)
 
-    while map[topOfSand + 1][x-1] == '.' or map[topOfSand + 1][x+1] == '.' or map[topOfSand + 1][x] == '.':
-        if map[topOfSand + 1][x] == '.':
-            pass
-        elif map[topOfSand + 1][x-1] == '.':
-            x -= 1
-        elif map[topOfSand + 1][x+1] == '.':
-            x += 1
-
-        topOfSand += 1
-        if topOfSand >= maxY:
-            sandLimit = unitsOfSand
-            break
-    
-    map[topOfSand][x] = 'o'
-    unitsOfSand += 1
-    if unitsOfSand in [1, 2, 3, 5, 22]:
-        log.debug(f'{unitsOfSand}:\n  {minX}\n' + printMap(map))
-
-log.info(f'{unitsOfSand}:\n  {minX}\n' + printMap(map))
-print(f'{unitsOfSand-1} units of sand come to rest before sand starts flowing into the abyss below.')
-
+print(f'{len(covered)} positions cannot contain a beacon.')
+assert len(covered) < 5942321, 'Answer is too high!'
