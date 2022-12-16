@@ -55,7 +55,7 @@ def toGml(valves):
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 log = logging.getLogger()
 
-with open('inputs/Day16.txt') as input:
+with open('inputs/Day16 sample.txt') as input:
     lines = input.read().splitlines()
 
 valves = {}
@@ -75,57 +75,59 @@ for valve in valves.values():
 toGml(valves.values())
 
 start = valves['AA']
-maxDistance = 30
+maxTime = 30
+openableValves = [openable for openable in valves.values() if openable.flowRate > 0]
 
 # Visit nodes
 # See: https://www.techiedelight.com/maximum-cost-path-graph-source-destination/
  
-# create a queue for doing BFS
+# Create a queue for doing BFS (avoids stack overflow)
 queue = deque()
 
-# add source vertex to set and enqueue it
-vertices = set([start])
+# Add source vertex to list and enqueue it
+path = list([start])
 
-# (current vertex, current path cost, set of nodes visited so far in
-# the current path)
-queue.append((start, 0, 1, vertices))
+# Append state:
+# (current vertex, current path cost, minutes elapsed, current path)
+queue.append((start, 0, 0, path, set()))
 
-# stores maximum cost of a path from the source
-maxcost = -1
+# Store maximum cost of a path from the source
+maxPressure = -1
+maxPath = []
 
-# loop till queue is empty
+# Loop till queue is empty
 while queue:
 
-    # dequeue front node
-    valve, cost, distance, vertices = queue.popleft()
+    # Dequeue front node (current state)
+    valve, pressure, time, path, openedValves = queue.popleft()
+
+    # Do for every adjacent edge of `v`
+    for destNode in valve.neighbours:
+        # Setup new state for visiting node
+        newTime = time + 1
+        # If the node has an unopened valve, and there's time, open it
+        pressureReleased = 0
+        if destNode.flowRate > 0 and destNode not in openedValves and newTime < maxTime:
+            openedValves = set(openedValves)    # Make a copy for the next itteration
+            openedValves.add(destNode)
+            pressureReleased = destNode.flowRate * (maxTime - time)
+            newTime += 1
+
+        # If all valves are open, or maxTime is reached, 
+        # check if this is the new max pressure, save the path, then continue
+        if len(openedValves) == len(openableValves) or newTime >= 30:
+            if pressure + pressureReleased > maxPressure:
+                maxPressure = pressure + pressureReleased
+                maxPath = list(path)
+                maxPath.append(destNode)
+                log.debug(f'New max pressure: {maxPressure} in {newTime} minutes: ({[node.label for node in maxPath]})')
+            continue
+
+        # Push the new state onto the queue
+
+        newPath = list(path)
+        newPath.append(destNode)
+        queue.append((destNode, pressure + pressureReleased, newTime, newPath, openedValves))
 
 
-    # do for every adjacent edge of `v`
-    for dest in valve.neighbours:
-
-        # check for a cycle
-        # if not dest in vertices:
-            log.debug(f'Move to {dest.label}.')
-            distance += 1
-
-            # add current node to the path
-            path = set(vertices)
-            path.add(dest)
-
-            # push every vertex (discovered or undiscovered) into
-            # the queue with a cost equal to the
-            # parent's cost plus the current edge's weight
-            pressureReleased = 0
-            if dest.flowRate > 0 and not dest in vertices:
-                pressureReleased = dest.flowRate * (maxDistance - distance)
-                distance += 1
-                log.debug(f'At {distance}, opening valve {dest.label} (will release {pressureReleased} total pressure)')
-            queue.append((dest, cost + pressureReleased, distance + 1, path))
-
-    # if the destination is reached and BFS depth is equal to `m`,
-    # update the minimum cost calculated so far
-    if distance >= maxDistance:
-        maxcost = max(maxcost, cost)
-        continue
-
-print(f'The maximum pressure released is {maxcost}')
+print(f'The maximum pressure released is {maxPressure}')
