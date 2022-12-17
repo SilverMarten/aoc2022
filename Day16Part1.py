@@ -10,8 +10,6 @@ class Valve:
     def __init__(self, label, flowRate, neighbourLabels) -> None:
         self.label = label
         self.flowRate = flowRate
-        self.value = 0
-        self.distance = 0
         self.neighbourLabels = neighbourLabels
         self.neighbours = []
 
@@ -19,7 +17,7 @@ class Valve:
         return self.value < other.value
 
     def __str__(self) -> str:
-        return f'{self.label} {self.flowRate} ({self.value}) {self.neighbourLabels}'
+        return f'{self.label} {self.flowRate} {self.neighbourLabels}'
 
 def toGml(valves):
 
@@ -52,11 +50,11 @@ def toGml(valves):
     with open('Day16.gml', mode='w') as output:
         output.write(gmlString)
 
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 log = logging.getLogger()
 
-with open('inputs/Day16 sample.txt') as input:
-    lines = input.read().splitlines()
+with open('inputs/Day16 sample.txt') as inputFile:
+    lines = inputFile.read().splitlines()
 
 valves = {}
 # Parse the input
@@ -66,7 +64,7 @@ for line in lines:
     neighbourLabels = line.split('valve')[1].replace('s', '').strip().split(', ')
     valves[label] = Valve(label, flowRate, neighbourLabels)
     
-log.debug('\n'.join([str(valve) for valve in valves.values()]))
+log.info('\n'.join([str(valve) for valve in valves.values()]))
 
 # Build the graph
 for valve in valves.values():
@@ -89,45 +87,64 @@ path = list([start])
 
 # Append state:
 # (current vertex, current path cost, minutes elapsed, current path)
-queue.append((start, 0, 0, path, set()))
+queue.append((start, 0, 0, path, set(openableValves)))
 
 # Store maximum cost of a path from the source
 maxPressure = -1
 maxPath = []
 
+paths = set()
+
 # Loop till queue is empty
 while queue:
 
     # Dequeue front node (current state)
-    valve, pressure, time, path, openedValves = queue.popleft()
+    valve, pressure, time, path, remainingValves = queue.popleft()
+
+    # Check if this path has already been covered
+    if ''.join([node.label for node in path]) in paths: continue
+
+    log.debug(f'From {valve.label}: pressure released {pressure}, {time} minutes, ({[node.label for node in path]})')
 
     # Do for every adjacent edge of `v`
     for destNode in valve.neighbours:
         # Setup new state for visiting node
         newTime = time + 1
+        newRemainingValves = set(remainingValves)    # Make a copy for the next itteration
         # If the node has an unopened valve, and there's time, open it
         pressureReleased = 0
-        if destNode.flowRate > 0 and destNode not in openedValves and newTime < maxTime:
-            openedValves = set(openedValves)    # Make a copy for the next itteration
-            openedValves.add(destNode)
-            pressureReleased = destNode.flowRate * (maxTime - time)
+        if destNode.flowRate > 0 and destNode in newRemainingValves and newTime < maxTime:
+            newRemainingValves.remove(destNode)
+            pressureReleased = destNode.flowRate * (maxTime - newTime - 1)
             newTime += 1
 
         # If all valves are open, or maxTime is reached, 
         # check if this is the new max pressure, save the path, then continue
-        if len(openedValves) == len(openableValves) or newTime >= 30:
+        if len(newRemainingValves) == 0 or newTime >= maxTime:
+            paths.add(''.join([node.label for node in path]))
             if pressure + pressureReleased > maxPressure:
                 maxPressure = pressure + pressureReleased
                 maxPath = list(path)
                 maxPath.append(destNode)
-                log.debug(f'New max pressure: {maxPressure} in {newTime} minutes: ({[node.label for node in maxPath]})')
+                log.info(f'New max pressure: {maxPressure} in {newTime} minutes: ({[node.label for node in maxPath]})')
+            else:
+                log.info(f'Done after {newTime} minutes: max pressure: {maxPressure} on path ({[node.label for node in maxPath]})')
             continue
+            
+
+        # If the next node would be the same we just came from,
+        # and a valve was not opened, skip it
+        # if newTime == time + 1 and len(path) > 1 and destNode == path[-2]:
+        #     continue 
 
         # Push the new state onto the queue
 
         newPath = list(path)
         newPath.append(destNode)
-        queue.append((destNode, pressure + pressureReleased, newTime, newPath, openedValves))
+        queue.append((destNode, pressure + pressureReleased, newTime, newPath, newRemainingValves))
+
+    if log.level == logging.DEBUG:
+        input()
 
 
 print(f'The maximum pressure released is {maxPressure}')
