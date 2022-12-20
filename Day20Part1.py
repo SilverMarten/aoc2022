@@ -15,11 +15,11 @@ after the value 0, wrapping around the list as necessary.
 What is the sum of the three numbers that form the grove coordinates?
 '''
 
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 log = logging.getLogger()
 CR = '\n'
 
-with open('inputs/Day20 sample.txt') as fileInput:
+with open('inputs/Day20.txt') as fileInput:
     lines = fileInput.read().splitlines()
 
 values = deque([Node(int(value)) for value in lines])
@@ -28,17 +28,18 @@ log.debug(f'Initial arrangement:{CR}{", ".join([str(value.value) for value in va
 
 round = 1
 i = 0
+zero = None
 while i < numValues:
     node = values[i]
-    if node.round != round:
+    if node.value == 0:
+        zero = node
+        i += 1
+    elif node.round != round:
         del values[i]
         node.round = round
-        newIndex = (i + node.value)
-        newIndex = newIndex % (numValues - 1)
-        # if newIndex <= 0:
-        #     newIndex = newIndex % (numValues - 1)
-        # elif newIndex >= numValues:
-        #     newIndex = newIndex % numValues + 1
+        newIndex = (i + node.value) % (numValues - 1)
+        if newIndex == 0:
+            newIndex = numValues - 1
             
         values.insert(newIndex, node)
 
@@ -48,7 +49,13 @@ while i < numValues:
         i += 1
 
 
+
+
 log.debug(f'Final arrangement:{CR}{", ".join([str(value.value) for value in values])}{CR}')
 
-sum = 0
-print(f'The sum of the three numbers that form the grove coordinates is {sum}')
+offset = values.index(zero)
+coordinates = (values[(1000 + offset)%numValues].value, 
+               values[(2000 + offset)%numValues].value, 
+               values[(3000 + offset)%numValues].value)
+sum = sum(coordinates)
+print(f'The sum of the three numbers that form the grove coordinates {coordinates} is {sum}')
