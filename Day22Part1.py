@@ -1,5 +1,6 @@
 import logging, Colorer, math, re
-from Tools import between
+import time
+startTime = time.time()
 
 '''
 --- Day 22: Monkey Map ---
@@ -103,15 +104,17 @@ log.info(f'Starting at {(column + grid.start[0] + 1, row +  grid.start[1] + 1)} 
 # Move on the grids
 moves = [(column + grid.start[0] + 1, row +  grid.start[1] + 1)]
 facings = [0]
-while move > 0:
+while move > 0: # and len(moves) < 100:
     newColumn = column + movement[facing][0]
     newRow = row + movement[facing][1]
-    newGrid:Grid
+    newGrid:Grid = grid
     # if not between(newColumn, grid.start[0], grid.start[0] + squareSize, inclusive=False) or\
     #    not between(newRow, grid.start[1], grid.start[1] + squareSize, inclusive=False):
     #     newGrid = grid.connections[facing]
-    if not between(newColumn, 0, squareSize, inclusive=False) or\
-       not between(newRow, 0, squareSize, inclusive=False):
+    # if not between(newColumn, 0, squareSize - 1) or\
+    #    not between(newRow, 0, squareSize - 1):
+    if newColumn not in range(squareSize) or\
+       newRow not in range(squareSize):
         newGrid = grid.connections[facing]
 
     # Does it hit a wall?
@@ -130,6 +133,8 @@ while move > 0:
         # Turn
         facing += turns.pop(0)
         facing %= 4
+        facings.pop()
+        facings.append(facing)
 
         move = distances.pop(0)
 
@@ -144,18 +149,20 @@ password = eval(passwordString)
 print(f'{CR}The final password is {passwordString}: {password}')
 
 # Check the moves
-for move in moves:
-    column, row = move[0] - 1, move[1] - 1
-    if lines[row][column] != '.':
-        log.error(f'{move} is not a valid move; there is a {lines[row][column]} there!')
+for column, row in moves:
+    if lines[row - 1][column - 1] != '.':
+        log.error(f'{move} is not a valid move; there is a {lines[row - 1][column - 1]} there!')
 
 # Output the final map
 directionsChars = ['>', 'v', '<', '^']
 charMap = [list(line) for line in lines]
-for move in zip(moves, facings):
-    column, row, facing = move[0][0] - 1, move[0][1] - 1, move[1]
+for move, facing in zip(moves, facings):
+    column, row = move[0] - 1, move[1] - 1
     charMap[row][column] = directionsChars[facing]
-with open('Day22 - output.txt', 'w') as outputFile:
-    outputFile.writelines([''.join(line) for line in charMap])
 
-assert password > 32492, f'Answer is too low! ({password})'
+charMap[row][column] = 'X'
+with open('Day22 - output.txt', 'w') as outputFile:
+    outputFile.writelines('\n'.join([''.join(line) for line in charMap]))
+
+if password <= 32492: log.error(f'Answer is too low! ({password})')
+log.warning(f'Took {(time.time() - startTime) * 1000}ms')
