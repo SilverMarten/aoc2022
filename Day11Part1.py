@@ -1,6 +1,7 @@
 import logging, Colorer, math
 from Tools import isDivisible
-
+import time
+startTime = time.time()
 '''
 Figure out which monkeys to chase by counting how many items they inspect over 20 rounds.
 What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans?
@@ -16,14 +17,15 @@ class Monkey:
         self.inspected = 0
 
     def __str__(self):
-        return f'  Starting items: {self.items}\n' +\
-               f'  Operation: {self.operation}\n' +\
-               f'  Test: divisible by {self.test}\n' +\
-               f'    If true: throw to monkey {self.trueMonkey}\n' +\
-               f'    If false: throw to monkey {self.falseMonkey}\n'
+        return f'''  Starting items: {self.items}
+    Operation: {self.operation}
+    Test: divisible by {self.test}
+    If true: throw to monkey {self.trueMonkey}
+    If false: throw to monkey {self.falseMonkey}
+'''
 
 
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 log = logging.getLogger()
 
 with open('inputs/Day11 sample.txt') as input:
@@ -85,3 +87,5 @@ for round in range(20):
 
 monkeys = sorted(monkeys, key=lambda m: m.inspected, reverse=True)
 print(f'The level of monkey business after 20 rounds is {monkeys[0].inspected * monkeys[1].inspected}')
+
+log.warning(f'Took {(time.time() - startTime) * 1000}ms')

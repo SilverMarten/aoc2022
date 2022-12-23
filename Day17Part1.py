@@ -24,7 +24,7 @@ numRocks = len(rocks)
 room = [list('+-------+')]
 
 height = 0
-
+rock: Rock
 # Drop 2022 rocks
 for n in range(2022):
     # Start the rock so that its left edge is two units away from the left wall

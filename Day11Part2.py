@@ -1,4 +1,6 @@
 import logging, Colorer, math
+import time
+startTime = time.time()
 
 '''
 Figure out which monkeys to chase by counting how many items they inspect over 20 rounds.
@@ -22,7 +24,7 @@ class Monkey:
                f'    If false: throw to monkey {self.falseMonkey}\n'
 
 
-logging.basicConfig(format='%(message)s', level=logging.WARN)
+logging.basicConfig(format='%(message)s', level=logging.ERROR)
 log = logging.getLogger()
 
 with open('inputs/Day11.txt') as input:
@@ -79,10 +81,10 @@ for round in range(10_000):
 
     if round+1 in [1,20] or (round+1)%1000 == 0\
         or round in range(20):
-        log.warn(f'\nRound {round+1}:')
+        log.warning(f'\nRound {round+1}:')
         # i = 0
         for monkey in range(len(monkeys)):
-            log.warn(f'Monkey {monkey} inspected items {monkeys[monkey].inspected} times')
+            log.warning(f'Monkey {monkey} inspected items {monkeys[monkey].inspected} times')
             # i += 1
 
 monkeys = sorted(monkeys, key=lambda m: m.inspected, reverse=True)
@@ -91,3 +93,6 @@ assert monkeyBusiness > 2570891260, f'{monkeyBusiness} is too low!'
 print(f'The level of monkey business after 10,000 rounds is {monkeyBusiness}')
 
 # 2570891260 is too low
+
+
+log.error(f'Took {(time.time() - startTime) * 1000}ms')

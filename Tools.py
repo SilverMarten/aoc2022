@@ -14,6 +14,7 @@ def sign(number):
     return (number > 0) - (number < 0 )
 
 def between(number, min, max, inclusive=True):
+    ''' This may not be as useful as I thought. '''
     return (number > min and number < max) \
            or (inclusive and (number == min or number == max))
 
