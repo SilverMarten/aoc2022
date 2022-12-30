@@ -1,4 +1,4 @@
-import logging, Colorer, time, math
+import logging, Colorer, time, numpy
 
 startTime = time.time()
 
@@ -9,19 +9,12 @@ What SNAFU number do you supply to Bob's console?
 
 def toSnafuNumber(decimalNumber:int) -> str:
     values:dict[int, str] = dict(zip([0,1,2,3,4],'012=-'))
-    base5Digits = [0]
-    remainder = decimalNumber
-    # Convert to a base 5 number
-    for n in range(round(math.log(decimalNumber, 5)), -1, -1):
-        digit = remainder // 5 ** n
-        base5Digits.append(digit)
-        remainder %= 5 ** n
-
-    base5String = "".join([str(digit) for digit in base5Digits])
+    
+    base5String = numpy.base_repr(decimalNumber, 5)
 
     # Adjust from the right
     snafuString = ''
-    digits = base5Digits
+    digits = [int(n) for n in base5String]
     carry = 0
     while digits:
         digit = int(digits.pop()) + carry
